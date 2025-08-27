@@ -14,7 +14,6 @@ El proyecto está inspirado en implementaciones académicas (como la tesis de ES
 ---
 
 ## Hardware
-- **Microcontrolador:** ESP32.  
+- **Microcontrolador:** ESP32 (Dev kit V1).  
 - **Estímulos:** LED para estímulo visual y buzzer piezoeléctrico opcional para estímulo auditivo.  
-- **Respuesta:** Pulsador con resistencia pull-up interna.  
-- **Otros:** Resistencias de 220–330 Ω para LEDs, alimentación USB 5V.  
+- **Respuesta:** Pulsador medido con sensor óptico(por el momento).
