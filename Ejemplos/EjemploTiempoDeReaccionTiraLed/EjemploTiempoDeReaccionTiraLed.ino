@@ -7,11 +7,11 @@ Adafruit_NeoPixel pixels(NUM_PIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 // --- Configuración del piezo ---
 const int piezoPin = 34;  // Entrada del sensor piezo
-const int umbral = 100;   // Nivel de detección del golpe
+const int umbral = 400;   // Nivel de detección del golpe
 
 // --- Variables de tiempo ---
 unsigned long tInicio = 0;
-unsigned long tReaccion
+unsigned long tReaccion = 0;
 bool esperandoGolpe = false;
 
 void setup() {
@@ -48,12 +48,13 @@ void loop() {
       // Azul -> golpe registrado
       setColor(0, 0, 255); 
       Serial.print("Golpe detectado! Tiempo de reacción: ");
-      Serial.print(tReaccion); Serial.println(" ms");
+      Serial.print(tReaccion); Serial.print(" ms - Umbral: "); Serial.println(valor);
       esperandoGolpe = false;
       
       // pausa antes de la siguiente ronda
       delay(2000);         
       setColor(255, 0, 0); // Rojo -> Tiempo de espera
+      delay(5000);  
     }
   }
 }

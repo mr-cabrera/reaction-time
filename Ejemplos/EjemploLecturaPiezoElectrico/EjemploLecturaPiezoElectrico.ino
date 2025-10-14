@@ -4,7 +4,7 @@
 /*Entre GND y GPIO34 una resistencia de 1 Mega Ohm */
 
 const int piezoPin = 34;  // ADC para los dos piezos en paralelo
-const int umbral = 100;   // Ajustar con pruebas
+const int umbral = 300;   // Ajustar con pruebas
 unsigned long debounce_ms = 100;
 unsigned long lastHit = 0;
 

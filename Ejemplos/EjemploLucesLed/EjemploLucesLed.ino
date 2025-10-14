@@ -1,7 +1,7 @@
 #include <Adafruit_NeoPixel.h>
 
 #define LED_PIN     18   // Pin donde se conecta el DIN de la tira
-#define NUM_PIXELS  3    // Número de LEDs en la tira
+#define NUM_PIXELS  4    // Número de LEDs en la tira
 
 Adafruit_NeoPixel pixels(NUM_PIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -13,22 +13,22 @@ void setup() {
 
 void loop() {
 
-//pixels.setPixelColor(0, pixels.Color(255, 255, 255));
+pixels.setPixelColor(0, pixels.Color(255, 255, 255));
 pixels.setPixelColor(1, pixels.Color(255, 255, 255));
 pixels.setPixelColor(2, pixels.Color(255, 255, 255));
 pixels.show();
 delay(3000);
-//pixels.setPixelColor(0, pixels.Color(0, 0, 255));
+pixels.setPixelColor(0, pixels.Color(0, 0, 255));
 pixels.setPixelColor(1, pixels.Color(0, 0, 255));
 pixels.setPixelColor(2, pixels.Color(0, 0, 255));
 pixels.show();
 delay(3000);
-//pixels.setPixelColor(0, pixels.Color(255, 0, 0));
+pixels.setPixelColor(0, pixels.Color(255, 0, 0));
 pixels.setPixelColor(1, pixels.Color(255, 0, 0));
 pixels.setPixelColor(2, pixels.Color(255, 0, 0));
 pixels.show();
 delay(3000);
-//pixels.setPixelColor(0, pixels.Color(0, 255, 0));
+pixels.setPixelColor(0, pixels.Color(0, 255, 0));
 pixels.setPixelColor(1, pixels.Color(0, 255, 0));
 pixels.setPixelColor(2, pixels.Color(0, 255, 0));
 pixels.show();
