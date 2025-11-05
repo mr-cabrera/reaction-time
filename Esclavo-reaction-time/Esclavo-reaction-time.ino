@@ -1,17 +1,14 @@
 #include <WiFi.h>
 #include <esp_now.h>
-#include <Adafruit_NeoPixel.h>
 
-#define PiezoPin    34        //Pin del Piezo electrico
-#define LED_PIN     18        //Pin tira de led
-#define NUM_PIXELS  3         //Numero de led
+#define PiezoPin  34        //Pin del Piezo electrico
+#define pinR      25
+#define pinG      26
+#define pinB      27
 
-const int umbral = 400;       //Umbral del PiezoElectrico
-unsigned long tInicio;        //Contador de tiempo
-bool esperandoGolpe = false;  //Estado para activar el contador
-
-// --- Configuración de la tira LED ---
-Adafruit_NeoPixel pixels(NUM_PIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
+int sumaLecturas, lecturaMinima, umbral;       //Umbral del PiezoElectrico
+unsigned long tInicio;          //Contador de tiempo
+bool esperandoGolpe = false;    //Estado para activar el contador
 
 // --- Configuración del ESP Now ---
 typedef struct {
@@ -21,41 +18,35 @@ typedef struct {
 
 mensajeRT msg;
 esp_now_peer_info_t peer;
-uint8_t masterMAC[] = {0x94, 0xE6, 0x86, 0x3C, 0x83, 0xB4}; 
-//MAC ESP 1:
-//MAC ESP 2:
-//MAC ESP 3:
+uint8_t masterMAC[] = {0x94, 0xE6, 0x86, 0x3C, 0x83, 0xB4}; //Mac del MAESTRO
+//MAC ESP 1: 94:54:C5:B0:92:D4 (Maestro)
+//MAC ESP 2: 94:54:C5:AF:0D:08 (Esclavo)
+//MAC ESP Emi: 94:E6:86:3C:83:B4
 
 void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
   mensajeRT incoming;
   memcpy(&incoming, data, sizeof(incoming));
 
   if (incoming.tipo == 0) {
-    setColor(255, 0, 0); // Rojo -> Tiempo de espera
+    
+    digitalWrite(pinR, LOW); digitalWrite(pinG, HIGH); digitalWrite(pinB, HIGH);// Rojo -> Tiempo de espera
     int espera = incoming.valor;
     Serial.print("Recibido esperar: "); Serial.println(espera); //Tiempo enviado por el maestro
     delay(espera);
 
     esperandoGolpe = true;
-    setColor(0, 255, 0); // Verde → señal de inicio 
+    digitalWrite(pinR, HIGH); digitalWrite(pinG, LOW); digitalWrite(pinB, HIGH); // Verde → señal de inicio 
     tInicio = millis();
   }
 }
 
-void setColor(int r, int g, int b) {
-  for (int i = 0; i < NUM_PIXELS; i++) {
-    pixels.setPixelColor(i, pixels.Color(r, g, b));
-  }
-  pixels.show();
-}
-
 void setup() {
   Serial.begin(115200);
-  pixels.begin();
-  pixels.clear();
-  pixels.show();
+  pinMode(pinR, OUTPUT);
+  pinMode(pinG, OUTPUT);
+  pinMode(pinB, OUTPUT);
 
-  setColor(255, 0, 0); // Rojo -> Tiempo de espera
+  digitalWrite(pinR, LOW);digitalWrite(pinG, HIGH);digitalWrite(pinB, HIGH); //Rojo -> Espera
 
   WiFi.mode(WIFI_STA);
 
@@ -74,18 +65,35 @@ void setup() {
   peer.encrypt = false;
   esp_now_add_peer(&peer);
 
+  for (int i = 0; i < 100; i++) {
+    int lectura = analogRead(PiezoPin); // Lee el valor del pin analógico (0 a 1023)
+    if (i == 0) {
+        lecturaMinima = lectura; // Inicializa con la primera lectura
+    } else if (lectura < lecturaMinima) {
+        lecturaMinima = lectura; // Actualiza si encuentra una más pequeña
+    }
+    sumaLecturas = sumaLecturas + lectura; // Suma la lectura al acumulador
+    delay(1); // Pequeña pausa opcional para asegurar la separación de muestras
+  }
+  int promedio = (sumaLecturas/100);
+  Serial.print("Promedio: "); Serial.println(promedio);
+  umbral = promedio - 200;
+  Serial.print("Umbral: "); Serial.println(umbral);
+  delay(1000);
+
   Serial.println("Esclavo listo");
 }
 
 void loop() {
   if (esperandoGolpe) {
     int valor = analogRead(PiezoPin); //Leemos el valor del golpe
-    if (valor > umbral) {
+    Serial.print("Valor: "); Serial.println(valor);
+    if (valor < umbral) {
       int tiempo = millis() - tInicio;
       esperandoGolpe = false;
 
-      setColor(0, 0, 255);  // Azul -> golpe registrado
-      Serial.print("Tiempo reacción local: "); Serial.println(tiempo);
+      digitalWrite(pinR, HIGH); digitalWrite(pinG, HIGH); digitalWrite(pinB, LOW); // Azul -> golpe registrado
+      Serial.print("Valor: "); Serial.print(valor); Serial.print(" - Tiempo reacción local: "); Serial.println(tiempo);
 
       msg.tipo = 1;
       msg.valor = tiempo;

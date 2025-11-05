@@ -17,3 +17,9 @@ El proyecto está inspirado en implementaciones académicas (como la tesis de ES
 - **Microcontrolador:** ESP32 (Dev kit V1).  
 - **Estímulos:** LED para estímulo visual y buzzer piezoeléctrico opcional para estímulo auditivo.  
 - **Respuesta:** Pulsador medido con sensor óptico(por el momento).
+
+---
+
+## MAC ESP32
+- **MAC ESP 1: 94:54:C5:B0:92:D4 (Maestro)
+- **MAC ESP 2: 94:54:C5:AF:0D:08 (Esclavo)

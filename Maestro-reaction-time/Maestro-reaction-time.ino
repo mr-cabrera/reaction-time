@@ -7,7 +7,10 @@ typedef struct {
 } mensajeRT;
 
 mensajeRT msg;
-uint8_t receptorMAC[] = {0xF4, 0x65, 0x0B, 0x46, 0xE5, 0xE0}; // MAC del esclavo
+uint8_t receptorMAC[] = {0x94, 0x54, 0xC5, 0xAF, 0x0D, 0x08}; // MAC del esclavo
+//MAC ESP 1: 94:54:C5:B0:92:D4 (Maestro)
+//MAC ESP 2: 94:54:C5:AF:0D:08 (Esclavo)
+//MAC ESP 3:
 
 esp_now_peer_info_t peer;
 
