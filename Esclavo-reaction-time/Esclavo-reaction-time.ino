@@ -22,7 +22,7 @@ typedef struct {
 
 mensajeRT msg;                    // Variable para enviar mensajes
 esp_now_peer_info_t peer;         // Información del dispositivo remoto (maestro)
-uint8_t masterMAC[] = {0x94, 0xE6, 0x86, 0x3C, 0x83, 0xB4}; // Dirección MAC del maestro
+uint8_t masterMAC[] = {0x94, 0x54, 0xC5, 0xB0, 0x92, 0xD4}; // Dirección MAC del maestro
 
 // --- Función de callback: se ejecuta cuando se recibe un mensaje por ESP-NOW ---
 void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
