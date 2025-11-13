@@ -8,6 +8,7 @@
 #define pinB      27         // Pin para LED azul
 
 // --- Variables globales ---
+bool flag;
 int sumaLecturas, lecturaMinima, umbral;   // Variables para calibrar el sensor piezoeléctrico
 unsigned long tInicio;                     // Almacena el tiempo en que comienza la medición
 int modoActual = 1;                        // Modo de operación actual (recibido desde el maestro)
@@ -119,7 +120,14 @@ void setup() {
   Serial.print("Promedio: "); Serial.println(promedio);
 
   // Define un umbral: se considera golpe cuando la lectura baja 200 unidades del promedio
-  umbral = promedio - 200;
+  if(promedio > 3000){
+    umbral = promedio - 1000;
+    flag = 0;
+  }else if (promedio < 100){
+    umbral = promedio + 1000;
+    flag = 1;
+  }
+  
   Serial.print("Umbral: "); Serial.println(umbral);
   delay(1000);
 
@@ -133,25 +141,47 @@ void loop() {
     int valor = analogRead(PiezoPin); // Lee el valor actual del sensor piezoeléctrico
     Serial.print("Valor: "); Serial.println(valor);
 
-    // Si el valor cae por debajo del umbral → se detecta un golpe
-    if (valor < umbral) {
-      int tiempo = millis() - tInicio; // Calcula el tiempo de reacción
-      Accion = false; // Detiene la espera de golpe
+    // Si el valor cae por debajo del umbral → se detecta un golpe4
+    if (flag == 0){
+      if (valor < umbral) {
+        int tiempo = millis() - tInicio; // Calcula el tiempo de reacción
+        Accion = false; // Detiene la espera de golpe
 
-      // LED azul encendido → Golpe detectado
-      digitalWrite(pinR, HIGH);
-      digitalWrite(pinG, HIGH);
-      digitalWrite(pinB, LOW);
+        // LED azul encendido → Golpe detectado
+        digitalWrite(pinR, HIGH);
+        digitalWrite(pinG, HIGH);
+        digitalWrite(pinB, LOW);
 
-      Serial.print("Valor: ");
-      Serial.print(valor);
-      Serial.print(" - Tiempo local: ");
-      Serial.println(tiempo);
+        Serial.print("Valor: ");
+        Serial.print(valor);
+        Serial.print(" - Tiempo local: ");
+        Serial.println(tiempo);
 
-      // Envía al maestro el tiempo medido
-      msg.tipo = 1;        // Tipo 1 = resultado de tiempo de reacción
-      msg.valor = tiempo;  // Envía el valor del tiempo
-      esp_now_send(masterMAC, (uint8_t*)&msg, sizeof(msg)); // Transmite los datos al maestro
+        // Envía al maestro el tiempo medido
+        msg.tipo = 1;        // Tipo 1 = resultado de tiempo de reacción
+        msg.valor = tiempo;  // Envía el valor del tiempo
+        esp_now_send(masterMAC, (uint8_t*)&msg, sizeof(msg)); // Transmite los datos al maestro
+      }
+    }else{
+      if (valor > umbral) {
+        int tiempo = millis() - tInicio; // Calcula el tiempo de reacción
+        Accion = false; // Detiene la espera de golpe
+
+        // LED azul encendido → Golpe detectado
+        digitalWrite(pinR, HIGH);
+        digitalWrite(pinG, HIGH);
+        digitalWrite(pinB, LOW);
+
+        Serial.print("Valor: ");
+        Serial.print(valor);
+        Serial.print(" - Tiempo local: ");
+        Serial.println(tiempo);
+
+        // Envía al maestro el tiempo medido
+        msg.tipo = 1;        // Tipo 1 = resultado de tiempo de reacción
+        msg.valor = tiempo;  // Envía el valor del tiempo
+        esp_now_send(masterMAC, (uint8_t*)&msg, sizeof(msg)); // Transmite los datos al maestro
+      }
     }
   }
 }
