@@ -117,6 +117,32 @@ String generarTablasHTML() {
   return html;
 }
 
+String genData() {
+    String js = "";
+
+    js += "let accion = [";
+    int nA = llenoAccion ? MAX_DATOS : indiceAccion;
+    for (int i = 0; i < nA; i++) {
+        if (i == nA - 1)
+            js += String(tiemposAccion[i]) + "];";
+        else 
+            js += String(tiemposAccion[i]) + ",";
+    }
+
+    js += "let reaccion = [";
+    int nR = llenoReaccion ? MAX_DATOS : indiceReaccion;
+    for (int i = 0; i < nR; i++) {
+        if (i == nR - 1)
+            js += String(tiemposReaccion[i]) + "];";
+        else 
+            js += String(tiemposReaccion[i]) + ",";
+    }
+
+    js += "function exportarCSV(nombre) { let filas = []; filas.push(`nombre: ${nombre}`); filas.push(\"\"); filas.push(\"indice,accion,reaccion\"); const maxLen = Math.max(accion.length, reaccion.length); for (let i = 0; i < maxLen; i++) { const idx = i + 1; const a = accion[i] !== undefined ? accion[i] : \"\"; const r = reaccion[i] !== undefined ? reaccion[i] : \"\"; filas.push(`${idx},${a},${r}`); } const csv = filas.join(\"\\n\"); const blob = new Blob([csv], { type: \"text/csv\" }); const url = URL.createObjectURL(blob); const link = document.createElement(\"a\"); link.href = url; link.download = \"datos.csv\"; link.click(); URL.revokeObjectURL(url);}";
+    
+    return js;
+}
+
 String getHTML() {
   String html = "<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>";
   html += "<title>ESP32 Tiempo Reacción</title><style>";
@@ -136,10 +162,13 @@ String getHTML() {
   html += "<button class='inicio' onclick=\"fetch('/inicio')\">Iniciar prueba</button>";
   html += "<button class='borrar' onclick=\"fetch('/borrar?modo=ultimo')\">Borrar último</button>";
   html += "<button class='borrarTodo' onclick=\"if(confirm('¿Seguro?'))fetch('/borrar?modo=todo')\">Borrar todo</button>";
+  html += "<button class='inicio' onclick=\"exportarCSV(document.getElementById('nombre').value)\">Exportar</button>";
+  html += "<div><span>Nombre: </span><input type=\"text\" id=\"nombre\" /></div>";
   html += "<div id='tablas'>" + generarTablasHTML() + "</div>";
   html += "<script>setInterval(()=>{fetch('/valor').then(r=>r.text()).then(t=>document.getElementById('tablas').innerHTML=t);"
-          "fetch('/modoActual').then(r=>r.text()).then(m=>document.getElementById('modo').innerHTML=m);},1000);</script>";
-  html += "</body></html>";
+          "fetch('/modoActual').then(r=>r.text()).then(m=>document.getElementById('modo').innerHTML=m);},1000);";
+  html += genData();
+  html += "</script></body></html>";
   return html;
 }
 
