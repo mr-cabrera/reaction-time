@@ -117,29 +117,11 @@ String generarTablasHTML() {
   return html;
 }
 
-String genData() {
+String genExportScript() {
     String js = "";
 
-    js += "let accion = [";
-    int nA = llenoAccion ? MAX_DATOS : indiceAccion;
-    for (int i = 0; i < nA; i++) {
-        if (i == nA - 1)
-            js += String(tiemposAccion[i]) + "];";
-        else 
-            js += String(tiemposAccion[i]) + ",";
-    }
+    js += "function exportarCSV(nombre) { const a = document.createElement('a'); a.href = `/exportar?nombre=${nombre}`; a.download = 'data.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }";
 
-    js += "let reaccion = [";
-    int nR = llenoReaccion ? MAX_DATOS : indiceReaccion;
-    for (int i = 0; i < nR; i++) {
-        if (i == nR - 1)
-            js += String(tiemposReaccion[i]) + "];";
-        else 
-            js += String(tiemposReaccion[i]) + ",";
-    }
-
-    js += "function exportarCSV(nombre) { let filas = []; filas.push(`nombre: ${nombre}`); filas.push(\"\"); filas.push(\"indice,accion,reaccion\"); const maxLen = Math.max(accion.length, reaccion.length); for (let i = 0; i < maxLen; i++) { const idx = i + 1; const a = accion[i] !== undefined ? accion[i] : \"\"; const r = reaccion[i] !== undefined ? reaccion[i] : \"\"; filas.push(`${idx},${a},${r}`); } const csv = filas.join(\"\\n\"); const blob = new Blob([csv], { type: \"text/csv\" }); const url = URL.createObjectURL(blob); const link = document.createElement(\"a\"); link.href = url; link.download = \"datos.csv\"; link.click(); URL.revokeObjectURL(url);}";
-    
     return js;
 }
 
@@ -167,7 +149,7 @@ String getHTML() {
   html += "<div id='tablas'>" + generarTablasHTML() + "</div>";
   html += "<script>setInterval(()=>{fetch('/valor').then(r=>r.text()).then(t=>document.getElementById('tablas').innerHTML=t);"
           "fetch('/modoActual').then(r=>r.text()).then(m=>document.getElementById('modo').innerHTML=m);},1000);";
-  html += genData();
+  html += genExportScript();
   html += "</script></body></html>";
   return html;
 }
@@ -210,6 +192,27 @@ void handleBorrar() {
     else if (m == "todo") borrarTodo();
     server.send(200, "text/plain", "Borrado");
   } else server.send(400, "text/plain", "Falta modo");
+}
+
+void handleExportar() {
+  String nombre = server.arg("nombre");
+  String csv;
+
+  csv += nombre + "\n";
+  csv += "indice,accion,reaccion\n";
+  int max_count = max(indiceAccion, indiceReaccion);
+
+  for (int i = 0; i < max_count; i++) {
+      csv += String(i+1);
+      csv += ",";
+      csv += i > indiceAccion ? String() : String(tiemposAccion[i]);
+      csv += ",";
+      csv += i > indiceReaccion ? String() : String(tiemposReaccion[i]);
+      csv += "\n";
+  }
+
+  server.sendHeader("Content-Disposition", "attachment; filename=\"tiempos.csv\"");
+  server.send(200, "text/csv", csv);
 }
 
 // =====================================================
@@ -256,6 +259,7 @@ void setup() {
   server.on("/valor", handleValor);
   server.on("/modoActual", handleModoActual);
   server.on("/borrar", handleBorrar);
+  server.on("/exportar", handleExportar);
   server.begin();
   Serial.println("Servidor web iniciado ✅");
 }
